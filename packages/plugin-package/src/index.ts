@@ -1,8 +1,8 @@
 import { detectPackageManager } from "@alcalzone/pak";
-import { DefaultStages } from "@alcalzone/release-script-core";
+import { DefaultStages, pathExists, readJson, writeJson } from "@alcalzone/release-script-core";
 import type { Context, Plugin, Stage } from "@alcalzone/release-script-core/types";
 import { isArray, isObject } from "alcalzone-shared/typeguards";
-import fs from "fs-extra";
+import fs from "node:fs/promises";
 import path from "path";
 import semver from "semver";
 import type { Argv } from "yargs";
@@ -46,6 +46,15 @@ async function getUpdatePackages(
 	return updatePackages;
 }
 
+async function getYarnVersion(context: Context): Promise<string> {
+	const { stdout: output } = await context.sys.exec("yarn", ["--version"], { cwd: context.cwd });
+	const version = output.trim();
+	if (!semver.valid(version)) {
+		context.cli.fatal(`Invalid yarn version "${version}"`);
+	}
+	return version;
+}
+
 class PackagePlugin implements Plugin {
 	public readonly id = "package";
 	public readonly stages = [DefaultStages.check, DefaultStages.edit, DefaultStages.commit];
@@ -57,6 +66,12 @@ class PackagePlugin implements Plugin {
 				description: "Update the lockfile before committing",
 				type: "boolean",
 				default: true,
+			},
+			forceUpdateLockfile: {
+				alias: ["force-update-lockfile", "lf"],
+				description: "Update the lockfile before committing, using the --force flag",
+				type: "boolean",
+				default: false,
 			},
 		});
 	}
@@ -77,11 +92,11 @@ class PackagePlugin implements Plugin {
 	private async executeCheckStage(context: Context): Promise<void> {
 		// ensure that package.json exists and has a version (unless in lerna mode)
 		const packPath = path.join(context.cwd, "package.json");
-		if (!(await fs.pathExists(packPath))) {
+		if (!(await pathExists(packPath))) {
 			context.cli.fatal("No package.json found in the current directory!");
 		}
 
-		const pack = await fs.readJson(packPath);
+		const pack = await readJson(packPath);
 
 		// Check if the current project is a monorepo
 		const isMonorepo =
@@ -93,7 +108,9 @@ class PackagePlugin implements Plugin {
 			} else {
 				// we need some yarn plugins to be able to handle this
 				const yarnRcPath = path.join(context.cwd, ".yarnrc.yml");
-				if (await fs.pathExists(yarnRcPath)) {
+				if (await pathExists(yarnRcPath)) {
+					const yarnVersion = await getYarnVersion(context);
+
 					const yarnRc = await fs.readFile(yarnRcPath, "utf8");
 					const yarnPlugins = yarnRc
 						.split("\n")
@@ -108,11 +125,16 @@ class PackagePlugin implements Plugin {
 						);
 					// A list of required plugins and how to import them
 					const requiredPlugins: Record<string, string> = {
-						"workspace-tools": "workspace-tools",
-						version: "version",
 						changed:
 							"https://github.com/Dcard/yarn-plugins/releases/latest/download/plugin-changed.js",
 					};
+					if (semver.lt(yarnVersion, "4.0.0")) {
+						// Yarn v4 includes these plugins by default
+						Object.assign(requiredPlugins, {
+							"workspace-tools": "workspace-tools",
+							version: "version",
+						});
+					}
 					const missingPlugins = Object.keys(requiredPlugins).filter(
 						(plugin) => !yarnPlugins.includes(plugin),
 					);
@@ -131,6 +153,7 @@ Alternatively, you can use ${context.cli.colors.blue("lerna")} to manage the mon
 
 					// All good, remember that we use yarn to manage the monorepo
 					context.setData("monorepo", "yarn");
+					context.setData("yarn_version", yarnVersion);
 
 					// One last check: make sure there is anything to publish
 					// We cannot use getEffectivePublishAllFlag here without introducing a circular dependency
@@ -214,7 +237,7 @@ Alternatively, you can use ${context.cli.colors.blue("lerna")} to manage the mon
 
 			pack.version = newVersion;
 			const packPath = path.join(context.cwd, "package.json");
-			await fs.writeJson(packPath, pack, { spaces: 2 });
+			await writeJson(packPath, pack);
 		}
 	}
 
@@ -235,9 +258,9 @@ Alternatively, you can use ${context.cli.colors.blue("lerna")} to manage the mon
 		const deleteStableVersions = async (): Promise<void> => {
 			for (const packPath of packageJsonFiles) {
 				try {
-					const pack = await fs.readJSON(packPath);
+					const pack = await readJson(packPath);
 					delete pack.stableVersion;
-					await fs.writeJSON(packPath, pack, { spaces: 2 });
+					await writeJson(packPath, pack);
 				} catch {
 					// ignore
 				}
@@ -271,19 +294,36 @@ Alternatively, you can use ${context.cli.colors.blue("lerna")} to manage the mon
 				)}`,
 			);
 
-			await deleteStableVersions();
+			const yarnVersion = context.hasData("yarn_version")
+				? context.getData<string>("yarn_version")
+				: undefined;
+			const yarnGte4 = !!yarnVersion && semver.gte(yarnVersion, "4.0.0");
+			const yarnGte418 = !!yarnVersion && semver.gte(yarnVersion, "4.18.0");
+
+			// yarn before 4.18.0 mishandles a pre-existing stableVersion field
+			if (!yarnGte418) await deleteStableVersions();
+
 			const commands = [
 				publishAll
-					? ["yarn", "workspaces", "foreach", "version", newVersion, "--deferred"]
+					? [
+							"yarn",
+							"workspaces",
+							"foreach",
+							...(yarnGte4 ? ["--all"] : []),
+							"version",
+							newVersion,
+							"--deferred",
+						]
 					: [
 							"yarn",
 							"changed",
 							"foreach",
+							...(yarnGte4 ? ["--all"] : []),
 							`--git-range=v${pack.version}`,
 							"version",
 							newVersion,
 							"--deferred",
-					  ],
+						],
 				["yarn", "version", newVersion, "--deferred"],
 				["yarn", "version", "apply", "--all"],
 			];
@@ -291,7 +331,7 @@ Alternatively, you can use ${context.cli.colors.blue("lerna")} to manage the mon
 				context.cli.logCommand(cmd, args);
 				await context.sys.exec(cmd, args, { cwd: context.cwd });
 			}
-			await deleteStableVersions();
+			if (!yarnGte418) await deleteStableVersions();
 		}
 	}
 
@@ -309,12 +349,16 @@ Alternatively, you can use ${context.cli.colors.blue("lerna")} to manage the mon
 			}
 		} else if (stage.id === "commit") {
 			if (context.hasData("monorepo") && context.getData("monorepo") === "yarn") {
-				// Not necessary, when using yarn workspaces this was done during the edit stage
+				// Not necessary, when using yarn workspaces, this was done during the edit stage
 				return;
 			}
 
-			if (context.argv.updateLockfile) {
-				context.cli.log(`updating lockfile...`);
+			if (context.argv.updateLockfile || context.argv.forceUpdateLockfile) {
+				context.cli.log(
+					`updating lockfile...${
+						context.argv.forceUpdateLockfile ? " (with --force)" : ""
+					}`,
+				);
 				const pak = await detectPackageManager({
 					cwd: context.cwd,
 					setCwdToPackageRoot: true,
@@ -325,6 +369,7 @@ Alternatively, you can use ${context.cli.colors.blue("lerna")} to manage the mon
 				if (!context.argv.dryRun) {
 					const result = await pak.install(undefined, {
 						ignoreScripts: true,
+						force: !!context.argv.forceUpdateLockfile,
 					});
 					if (!result.success) {
 						context.cli.error(`Updating lockfile failed: ${result.stderr}`);

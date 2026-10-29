@@ -1,6 +1,6 @@
-import { DefaultStages } from "@alcalzone/release-script-core";
+import { DefaultStages, pathExists } from "@alcalzone/release-script-core";
 import type { Context, Plugin, Stage } from "@alcalzone/release-script-core/types";
-import fs from "fs-extra";
+import fs from "node:fs/promises";
 import os from "os";
 import path from "path";
 import type { Argv } from "yargs";
@@ -16,8 +16,29 @@ async function hasGitIdentity(context: Context): Promise<boolean> {
 			cwd: context.cwd,
 		});
 		return username !== "" && email !== "";
-	} catch (e) {
+	} catch {
 		return false;
+	}
+}
+
+async function getCurrentBranch(context: Context): Promise<string> {
+	const { stdout: branch } = await context.sys.execRaw("git rev-parse --abbrev-ref HEAD", {
+		cwd: context.cwd,
+	});
+	return branch;
+}
+
+async function getDefaultBranch(context: Context): Promise<string | undefined> {
+	try {
+		const { stdout } = await context.sys.execRaw(
+			"git symbolic-ref --short refs/remotes/origin/HEAD",
+			{ cwd: context.cwd },
+		);
+		// Output is like "origin/main", extract the branch name
+		const match = stdout.match(/^origin\/(.+)$/);
+		return match?.[1];
+	} catch {
+		return undefined;
 	}
 }
 
@@ -67,6 +88,51 @@ async function gitStatus(context: Context): Promise<GitStatus> {
 	}
 }
 
+function matchesBranchPattern(branch: string, pattern: string): boolean {
+	// Support only * as a wildcard that matches 1 or more characters
+	// Escape all regex special characters except *
+	const regexPattern = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".+");
+
+	// Anchor the pattern to match the entire branch name
+	const anchored = `^${regexPattern}$`;
+
+	try {
+		return new RegExp(anchored).test(branch);
+	} catch {
+		// If regex is invalid, treat as literal string match
+		return branch === pattern;
+	}
+}
+
+async function checkBranchPattern(context: Context, currentBranch: string): Promise<void> {
+	const patterns = context.argv.branchPattern as string | string[] | undefined;
+
+	let branchPatterns: string[];
+	if (patterns) {
+		branchPatterns = Array.isArray(patterns) ? patterns : [patterns];
+	} else {
+		// If the user did not specify any patterns, default to the repository's default branch
+		const defaultBranch = await getDefaultBranch(context);
+		if (defaultBranch) {
+			branchPatterns = [defaultBranch];
+		} else {
+			// Fallback to common defaults if we can't determine the default branch
+			branchPatterns = ["main", "master"];
+		}
+	}
+
+	const matches = branchPatterns.some((pattern) => matchesBranchPattern(currentBranch, pattern));
+
+	if (!matches) {
+		const message = `Release can only be triggered from branches matching:
+${context.cli.colors.blue(branchPatterns.map((p) => `· ${p}`).join("\n"))}
+Current branch: ${context.cli.colors.red(currentBranch)}
+
+Note: Use the --branch-pattern option to customize this behavior.`;
+		context.cli.fatal(message);
+	}
+}
+
 class GitPlugin implements Plugin {
 	public readonly id = "git";
 	public readonly stages = [
@@ -98,6 +164,17 @@ class GitPlugin implements Plugin {
 				description: "Only push the annotated tag, not the release commit",
 				default: false,
 			},
+			noPush: {
+				type: "boolean",
+				description: "Do not push anything to the remote",
+				default: false,
+			},
+			branchPattern: {
+				type: "string",
+				array: true,
+				description:
+					"On which git branches a release may be created. Supports '*' as a wildcard. Defaults to the repository's default branch, or ['main', 'master'] if it cannot be determined.",
+			},
 		});
 	}
 
@@ -122,6 +199,10 @@ Note: If the current folder belongs to a different user than ${colors.bold(
 `;
 			context.cli.fatal(message);
 		}
+
+		// Check that we're on the correct branch
+		const currentBranch = await getCurrentBranch(context);
+		await checkBranchPattern(context, currentBranch);
 
 		const lerna = context.hasData("lerna") && !!context.getData("lerna");
 
@@ -168,21 +249,34 @@ ${context.getData("changelog_new")}`;
 		}
 
 		// And commit stuff
+		const tagName = `v${newVersion}`;
+		const tagCommand = ["git", "tag", "-a", tagName, "-m", tagName];
 		const commands = [
 			["git", "add", "-A", "--", ":(exclude).commitmessage"],
 			["git", "commit", "-F", ".commitmessage"],
-			["git", "tag", "-a", `v${newVersion}`, "-m", `v${newVersion}`],
+			tagCommand,
 		];
 
-		for (const [cmd, ...args] of commands) {
+		for (const command of commands) {
+			const [cmd, ...args] = command;
 			context.cli.logCommand(cmd, args);
 			if (!context.argv.dryRun) {
 				await context.sys.exec(cmd, args, { cwd: context.cwd });
+				// Record the tag name only after `git tag` succeeds, so rollback
+				// never deletes a pre-existing tag of the same name.
+				if (command === tagCommand && context.rollback) {
+					context.rollback.createdTag = tagName;
+				}
 			}
 		}
 	}
 
 	private async executePushStage(context: Context): Promise<void> {
+		if (context.argv.noPush) {
+			context.cli.log("git push skipped");
+			return;
+		}
+
 		const upstream =
 			(context.argv.remote as string | undefined) || (await getUpstream(context));
 		const [remote, branch] = upstream.split("/", 2);
@@ -203,6 +297,11 @@ ${context.getData("changelog_new")}`;
 		for (const command of commands) {
 			context.cli.logCommand(command);
 			if (!context.argv.dryRun) {
+				// Remember that we attempted to push immediately before the first
+				// actual push command, not during information gathering.
+				if (context.rollback) {
+					context.rollback.pushAttempted = true;
+				}
 				await context.sys.execRaw(command, { cwd: context.cwd });
 			}
 		}
@@ -210,7 +309,7 @@ ${context.getData("changelog_new")}`;
 
 	private async executeCleanupStage(context: Context): Promise<void> {
 		const commitMessagePath = path.join(context.cwd, ".commitmessage");
-		if (await fs.pathExists(commitMessagePath)) {
+		if (await pathExists(commitMessagePath)) {
 			context.cli.log("Removing .commitmessage file");
 			await fs.unlink(path.join(context.cwd, ".commitmessage"));
 		}

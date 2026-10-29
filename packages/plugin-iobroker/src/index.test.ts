@@ -1,11 +1,12 @@
 import { DefaultStages } from "@alcalzone/release-script-core";
 import { assertReleaseError, createMockContext, TestFS } from "@alcalzone/release-script-testing";
-import fs from "fs-extra";
+import fs from "node:fs/promises";
 import path from "path";
-import IoBrokerPlugin from ".";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import IoBrokerPlugin from "./index.js";
 
 const mockTranslate = { translate: "mock" };
-jest.mock("./translate", () => ({
+vi.mock("./translate", () => ({
 	translateText: () => mockTranslate,
 }));
 

@@ -1,7 +1,7 @@
-import { DefaultStages } from "@alcalzone/release-script-core";
+import { DefaultStages, pathExists } from "@alcalzone/release-script-core";
 import type { Context, Plugin, Stage } from "@alcalzone/release-script-core/types";
 import { isArray } from "alcalzone-shared/typeguards";
-import fs from "fs-extra";
+import fs from "node:fs/promises";
 import path from "path";
 import semver from "semver";
 import glob from "tiny-glob";
@@ -110,6 +110,7 @@ class VersionPlugin implements Plugin {
 		} else {
 			context.argv.preid = undefined;
 		}
+		// @ts-expect-error preid is only used for "pre*" bumps
 		const newVersion = semver.inc(version, context.argv.bump as any, context.argv.preid)!;
 		context.cli.log(`Bumping version from ${version} to ${newVersion}`);
 		if (askOk && !context.argv.yes) {
@@ -154,7 +155,7 @@ class VersionPlugin implements Plugin {
 					for (const r of re) {
 						try {
 							new RegExp(r, "g");
-						} catch (e) {
+						} catch {
 							context.cli.error(
 								`Invalid option versionFiles: replacement pattern for glob "${pattern}" contains invalid regular expression "${r}"!`,
 							);
@@ -183,7 +184,7 @@ class VersionPlugin implements Plugin {
 
 				for (const file of files) {
 					const filePath = path.join(context.cwd, file);
-					if (!(await fs.pathExists(filePath))) continue;
+					if (!(await pathExists(filePath))) continue;
 
 					if (context.argv.verbose) {
 						context.cli.log(`Updating version in ${file}`);

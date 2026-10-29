@@ -1,11 +1,12 @@
 import { detectPackageManager } from "@alcalzone/pak";
 import { DefaultStages } from "@alcalzone/release-script-core";
 import { assertReleaseError, createMockContext, TestFS } from "@alcalzone/release-script-testing";
-import fs from "fs-extra";
+import fs from "node:fs/promises";
 import path from "path";
-import PackagePlugin from ".";
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import PackagePlugin from "./index.js";
 
-jest.mock("@alcalzone/pak");
+vi.mock("@alcalzone/pak");
 
 const fixtures = {
 	yarnrc_commented_out: `
@@ -170,6 +171,11 @@ describe("Package plugin", () => {
 				".yarnrc.yml": fixtures.yarnrc_commented_out,
 			});
 
+			context.sys.mockExec((cmd) => {
+				if (cmd === "yarn --version") return "3.4.5";
+				return "";
+			});
+
 			await assertReleaseError(() => pkgPlugin.executeStage(context, DefaultStages.check), {
 				fatal: true,
 				messageMatches: /plugin import version/i,
@@ -240,11 +246,10 @@ describe("Package plugin", () => {
 			context.setData("version_new", newVersion);
 			context.setData("monorepo", "yarn");
 
-			context.sys.mockExec((cmd) =>
-				cmd.includes("changed list")
-					? "" // no changes!
-					: "",
-			);
+			context.sys.mockExec((cmd) => {
+				if (cmd === "yarn --version") return "3.4.5";
+				return "";
+			});
 
 			await assertReleaseError(() => pkgPlugin.executeStage(context, DefaultStages.check), {
 				fatal: true,
@@ -330,7 +335,7 @@ describe("Package plugin", () => {
 
 			await pkgPlugin.executeStage(context, DefaultStages.edit);
 
-			const fileContent = await fs.readJson(packPath);
+			const fileContent = JSON.parse(await fs.readFile(packPath, "utf8"));
 			expect(fileContent).toEqual(pack);
 		});
 
@@ -357,7 +362,7 @@ describe("Package plugin", () => {
 
 			await pkgPlugin.executeStage(context, DefaultStages.edit);
 
-			const fileContent = await fs.readJson(packPath);
+			const fileContent = JSON.parse(await fs.readFile(packPath, "utf8"));
 			expect(fileContent).toEqual(pack);
 		});
 
@@ -417,6 +422,98 @@ describe("Package plugin", () => {
 				expect(context.sys.exec).toHaveBeenCalledWith(cmd, args, expect.anything());
 			}
 		});
+
+		it("deletes the stableVersion field from changed packages on yarn < 4.18.0", async () => {
+			const pkgPlugin = new PackagePlugin();
+			const context = createMockContext({
+				plugins: [pkgPlugin],
+				cwd: testFSRoot,
+			});
+
+			const oldVersion = "1.2.3";
+			const newVersion = "1.2.4";
+
+			const pack = {
+				name: "test-package",
+				version: oldVersion,
+				workspaces: ["packages/*"],
+			};
+			await testFS.create({
+				"package.json": JSON.stringify(pack, null, 2),
+				".yarnrc.yml": fixtures.yarnrc_complete,
+				"packages/foo/package.json": JSON.stringify({
+					name: "@package/foo",
+					version: oldVersion,
+					stableVersion: oldVersion,
+				}),
+			});
+
+			context.setData("package.json", pack);
+			context.setData("version", oldVersion);
+			context.setData("version_new", newVersion);
+			context.setData("monorepo", "yarn");
+			context.setData("yarn_version", "4.0.0");
+
+			context.sys.mockExec((cmd) =>
+				cmd.includes("changed list")
+					? `{"name":"@package/foo","location":"packages/foo"}`
+					: "",
+			);
+
+			await pkgPlugin.executeStage(context, DefaultStages.edit);
+			expect(context.errors).toHaveLength(0);
+
+			const foo = JSON.parse(
+				await fs.readFile(path.join(testFSRoot, "packages/foo/package.json"), "utf8"),
+			);
+			expect(foo).not.toHaveProperty("stableVersion");
+		});
+
+		it("keeps the stableVersion field on yarn >= 4.18.0", async () => {
+			const pkgPlugin = new PackagePlugin();
+			const context = createMockContext({
+				plugins: [pkgPlugin],
+				cwd: testFSRoot,
+			});
+
+			const oldVersion = "1.2.3";
+			const newVersion = "1.2.4";
+
+			const pack = {
+				name: "test-package",
+				version: oldVersion,
+				workspaces: ["packages/*"],
+			};
+			await testFS.create({
+				"package.json": JSON.stringify(pack, null, 2),
+				".yarnrc.yml": fixtures.yarnrc_complete,
+				"packages/foo/package.json": JSON.stringify({
+					name: "@package/foo",
+					version: oldVersion,
+					stableVersion: oldVersion,
+				}),
+			});
+
+			context.setData("package.json", pack);
+			context.setData("version", oldVersion);
+			context.setData("version_new", newVersion);
+			context.setData("monorepo", "yarn");
+			context.setData("yarn_version", "4.18.0");
+
+			context.sys.mockExec((cmd) =>
+				cmd.includes("changed list")
+					? `{"name":"@package/foo","location":"packages/foo"}`
+					: "",
+			);
+
+			await pkgPlugin.executeStage(context, DefaultStages.edit);
+			expect(context.errors).toHaveLength(0);
+
+			const foo = JSON.parse(
+				await fs.readFile(path.join(testFSRoot, "packages/foo/package.json"), "utf8"),
+			);
+			expect(foo).toHaveProperty("stableVersion", oldVersion);
+		});
 	});
 
 	describe("commit stage", () => {
@@ -444,8 +541,8 @@ describe("Package plugin", () => {
 			context.sys.mockExec(() => "");
 
 			// Mock pak
-			const pakInstall = jest.fn().mockResolvedValue({ success: true });
-			(detectPackageManager as jest.Mock).mockReturnValue({
+			const pakInstall = vi.fn().mockResolvedValue({ success: true });
+			(detectPackageManager as Mock).mockReturnValue({
 				install: pakInstall,
 			});
 
@@ -472,8 +569,8 @@ describe("Package plugin", () => {
 			context.sys.mockExec(() => "");
 
 			// Mock pak
-			const pakInstall = jest.fn().mockResolvedValue({ success: true });
-			(detectPackageManager as jest.Mock).mockReturnValue({
+			const pakInstall = vi.fn().mockResolvedValue({ success: true });
+			(detectPackageManager as Mock).mockReturnValue({
 				install: pakInstall,
 			});
 
@@ -499,8 +596,8 @@ describe("Package plugin", () => {
 			context.sys.mockExec(() => "");
 
 			// Mock pak
-			const pakInstall = jest.fn().mockResolvedValue({ success: false, stderr: "NOOOO" });
-			(detectPackageManager as jest.Mock).mockReturnValue({
+			const pakInstall = vi.fn().mockResolvedValue({ success: false, stderr: "NOOOO" });
+			(detectPackageManager as Mock).mockReturnValue({
 				install: pakInstall,
 			});
 
@@ -543,7 +640,7 @@ describe("Package plugin", () => {
 			await pkgPlugin.executeStage(context, DefaultStages.commit);
 			expect(context.errors).toHaveLength(0);
 
-			const fileContent = await fs.readJson(packPath);
+			const fileContent = JSON.parse(await fs.readFile(packPath, "utf8"));
 			expect(fileContent).toEqual(pack);
 
 			expect(context.sys.execRaw).not.toHaveBeenCalled();

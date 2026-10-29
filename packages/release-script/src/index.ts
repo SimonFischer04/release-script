@@ -1,20 +1,24 @@
 import {
-	CLI as ICLI,
-	Context,
+	type Context,
 	exec,
 	execRaw,
 	execute,
+	finalizeRollback,
+	type CLI as ICLI,
 	isReleaseError,
-	Plugin,
+	type Plugin,
 	ReleaseError,
 	resolvePlugins,
-	SelectOption,
+	type SelectOption,
 	stripColors,
 } from "@alcalzone/release-script-core";
 import { distinct } from "alcalzone-shared/arrays";
-import { prompt } from "enquirer";
+import enquirer from "enquirer";
 import colors from "picocolors";
 import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
+
+const { prompt } = enquirer;
 
 function colorizeTextAndTags(
 	textWithTags: string,
@@ -89,6 +93,10 @@ class CLI implements ICLI {
 		this.log(`$ ${command}`);
 	}
 	clearLines(lines: number): void {
+		if (!process.stdout.isTTY) {
+			return;
+		}
+
 		process.stdout.moveCursor(0, -lines);
 		process.stdout.clearScreenDown();
 	}
@@ -129,14 +137,14 @@ class CLI implements ICLI {
 		}
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-inferrable-types
 	public prefix: string = "";
 	public readonly colors = colors;
 	public readonly stripColors = stripColors;
 }
 
 export async function main(): Promise<void> {
-	let argv = yargs
+	const yargsInstance = yargs(hideBin(process.argv));
+	let argv = yargsInstance
 		.env("RELEASE_SCRIPT")
 		.usage("$0 [<bump> [<preid>]] [options]", "AlCalzone's release script", (yargs) =>
 			yargs
@@ -158,7 +166,7 @@ export async function main(): Promise<void> {
 					required: false,
 				}),
 		)
-		.wrap(yargs.terminalWidth())
+		.wrap(yargsInstance.terminalWidth())
 		// Delay showing help until the second parsing pass
 		.help(false)
 		.alias("v", "version")
@@ -192,6 +200,12 @@ export async function main(): Promise<void> {
 				description: `Bump and publish all non-private packages in monorepos, even if they didn't change`,
 				default: false,
 			},
+			noRollback: {
+				type: "boolean",
+				description:
+					"Do not roll back local changes (file edits, commits, tags) if the release fails before pushing",
+				default: false,
+			},
 		});
 
 	// We do two-pass parsing:
@@ -212,9 +226,7 @@ export async function main(): Promise<void> {
 	const allPlugins: Plugin[] = await Promise.all(
 		chosenPlugins.map(
 			async (plugin) =>
-				new (
-					await import(`@alcalzone/release-script-plugin-${plugin}`)
-				).default(),
+				new (await import(`@alcalzone/release-script-plugin-${plugin}`)).default(),
 		),
 	);
 	const plugins = resolvePlugins(allPlugins, chosenPlugins);
@@ -271,6 +283,9 @@ export async function main(): Promise<void> {
 	};
 	context.cli = new CLI(context);
 
+	let failed = false;
+	let exitCode: number | undefined;
+
 	try {
 		// Initialize plugins
 		for (const plugin of plugins) {
@@ -295,7 +310,8 @@ export async function main(): Promise<void> {
 			message += "!";
 			console.error();
 			console.error(message);
-			process.exit(1);
+			failed = true;
+			exitCode = 1;
 		}
 	} catch (e: any) {
 		if (isReleaseError(e)) {
@@ -318,7 +334,32 @@ export async function main(): Promise<void> {
 				),
 			);
 		}
-		process.exit((e as any).code ?? 1);
+		failed = true;
+		exitCode = (e as any).code ?? 1;
+	}
+
+	try {
+		await finalizeRollback(context, { failed });
+	} catch (rollbackError: any) {
+		const msg = rollbackError?.stack ?? rollbackError?.message ?? String(rollbackError);
+		console.error(
+			prependPrefix(
+				context.cli.prefix,
+				colorizeTextAndTags(
+					`[FATAL] Rollback itself failed: ${msg}`,
+					colors.red,
+					colors.bgRed,
+				),
+			),
+		);
+		// A rollback that throws leaves the working tree in an unknown state —
+		// always surface a non-zero exit so automation can detect it, even if
+		// the release itself was successful up to that point.
+		exitCode ??= 1;
+	}
+
+	if (exitCode !== undefined) {
+		process.exit(exitCode);
 	}
 }
 

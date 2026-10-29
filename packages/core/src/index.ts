@@ -1,6 +1,8 @@
-export { stripColors } from "./lib/cli";
-export * from "./lib/error";
-export * from "./lib/exec";
-export { execute, resolvePlugins } from "./lib/planner";
-export { DefaultStages } from "./lib/stage";
-export * from "./types";
+export { stripColors } from "./lib/cli.js";
+export { pathExists, readJson, writeJson } from "./lib/fs.js";
+export * from "./lib/error.js";
+export * from "./lib/exec.js";
+export { execute, resolvePlugins } from "./lib/planner.js";
+export { captureRollbackSnapshot, finalizeRollback } from "./lib/rollback.js";
+export { DefaultStages } from "./lib/stage.js";
+export type * from "./types.js";

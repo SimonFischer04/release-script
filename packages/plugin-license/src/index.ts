@@ -1,9 +1,27 @@
-import { DefaultStages } from "@alcalzone/release-script-core";
+import { DefaultStages, pathExists } from "@alcalzone/release-script-core";
 import type { Context, Plugin, Stage } from "@alcalzone/release-script-core/types";
-import fs from "fs-extra";
+import fs from "node:fs/promises";
 import path from "path";
 import glob from "tiny-glob";
 import type { Argv } from "yargs";
+
+const GPL_LICENSE_TEXT_REGEX = /\bGNU\s+(?:AFFERO\s+|LESSER\s+)?GENERAL\s+PUBLIC\s+LICENSE\b/i;
+const FREE_SOFTWARE_FOUNDATION_REGEX = /\bFree Software Foundation\b/i;
+
+function getLineContainingMatch(content: string, match: RegExpExecArray): string {
+	const lineStart = content.lastIndexOf("\n", match.index) + 1;
+	const lineEnd = content.indexOf("\n", match.index + match[0].length);
+	return content.slice(lineStart, lineEnd === -1 ? content.length : lineEnd);
+}
+
+function isKnownLicenseTextCopyright(content: string, match: RegExpExecArray): boolean {
+	// GPL-family license texts contain the Free Software Foundation's own
+	// copyright notice. This is part of the license text, not the project's
+	// copyright notice, so it must not make the check fail.
+	if (!GPL_LICENSE_TEXT_REGEX.test(content)) return false;
+
+	return FREE_SOFTWARE_FOUNDATION_REGEX.test(getLineContainingMatch(content, match));
+}
 
 class LicensePlugin implements Plugin {
 	public readonly id = "license";
@@ -35,7 +53,7 @@ class LicensePlugin implements Plugin {
 
 			for (const file of files) {
 				const filePath = path.join(context.cwd, file);
-				if (!(await fs.pathExists(filePath))) continue;
+				if (!(await pathExists(filePath))) continue;
 
 				const fileContent = await fs.readFile(filePath, "utf8");
 				const regex =
@@ -43,6 +61,8 @@ class LicensePlugin implements Plugin {
 				let match: RegExpExecArray | null;
 				let latest: RegExpExecArray | undefined;
 				while ((match = regex.exec(fileContent))) {
+					if (isKnownLicenseTextCopyright(fileContent, match)) continue;
+
 					if (
 						!latest ||
 						parseInt(match.groups!.current) > parseInt(latest.groups!.current)

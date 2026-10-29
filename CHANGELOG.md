@@ -3,6 +3,50 @@
     Placeholder for the next version (at the beginning of the line):
     ## **WORK IN PROGRESS**
 -->
+## 5.2.2 (2026-07-31)
+* `license` plugin: Do not complain about outdated copyright year in GPL and similar licenses (#209)
+
+## 5.2.1 (2026-06-03)
+* Fix: preserve newlines between `CHANGELOG_OLD.md` link and README footer (#207)
+
+## 5.2.0 (2026-05-06)
+* Local changes are now snapshotted and restored if the release fails locally (#205)
+* Fix: make `CHANGELOG_OLD.md` rotation more resilient (#202)
+
+## 5.1.2 (2026-02-24)
+* `iobroker` plugin: Increase HTTP timeouts
+
+## 5.1.1 (2026-02-12)
+* Update dependencies
+* Use trusted publishing
+
+## 5.1.0 (2026-01-16)
+* `iobroker` plugin: Support translation using DeepL API
+
+## 5.0.0 (2025-10-20)
+* Breaking: Releases can only be created from the default branch (usually `main` or `master`) now. To configure this behavior, use the `branchPattern` option, e.g. `--branchPattern release/*` to allow releases from branches starting with `release/`.
+
+## 4.0.0 (2025-10-07)
+* Dependency upgrades
+* Switch to ESM module format
+* Require Node.js 18+
+
+## 3.8.0 (2024-07-23)
+* `git` plugin: allow to skip push stage via `noPush` option
+
+## 3.7.3 (2024-07-05)
+* `package` plugin: Support monorepos managed with Yarn v4
+
+## 3.7.2 (2024-06-24)
+* `iobroker` plugin: Fixed issue in changelog cleanup routine introduced in `3.7.1`
+
+## 3.7.1 (2024-06-12)
+* `iobroker` plugin: Detect more author names and @ mentions in the changelog
+
+## 3.7.0 (2023-11-29)
+* Added `-lf` option to run the lock file update with the `--force` flag
+* Dependency upgrades
+
 ## 3.6.0 (2023-07-03)
 * `git` plugin: Add the `--tagOnly` flag to only create a tag without pushing the commit to the release branch.
 

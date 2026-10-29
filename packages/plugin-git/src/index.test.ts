@@ -1,8 +1,9 @@
-import { DefaultStages } from "@alcalzone/release-script-core";
+import { DefaultStages, pathExists } from "@alcalzone/release-script-core";
 import { assertReleaseError, createMockContext, TestFS } from "@alcalzone/release-script-testing";
-import fs from "fs-extra";
+import fs from "node:fs/promises";
 import path from "path";
-import GitPlugin from ".";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import GitPlugin from "./index.js";
 
 describe("Git plugin", () => {
 	describe("check stage", () => {
@@ -14,6 +15,7 @@ describe("Git plugin", () => {
 			context.sys.mockExec({
 				"git config --get user.name": "",
 				"git config --get user.email": "",
+				"git rev-parse --abbrev-ref HEAD": "main",
 			});
 
 			await assertReleaseError(() => gitPlugin.executeStage(context, DefaultStages.check), {
@@ -30,6 +32,7 @@ describe("Git plugin", () => {
 			context.sys.mockExec({
 				"git config --get user.name": "henlo",
 				"git config --get user.email": "this.is@dog",
+				"git rev-parse --abbrev-ref HEAD": "main",
 				"git rev-list --left-right --count HEAD...origin": "0\t2",
 			});
 
@@ -47,6 +50,7 @@ describe("Git plugin", () => {
 			context.sys.mockExec({
 				"git config --get user.name": "henlo",
 				"git config --get user.email": "this.is@dog",
+				"git rev-parse --abbrev-ref HEAD": "main",
 				"git rev-list --left-right --count HEAD...origin": "1\t1",
 			});
 
@@ -65,6 +69,7 @@ describe("Git plugin", () => {
 			context.sys.mockExec({
 				"git config --get user.name": "henlo",
 				"git config --get user.email": "this.is@dog",
+				"git rev-parse --abbrev-ref HEAD": "main",
 				"git rev-list --left-right --count HEAD...origin": "1\t0",
 				"git status --porcelain": "whatever",
 			});
@@ -83,6 +88,7 @@ describe("Git plugin", () => {
 			context.sys.mockExec({
 				"git config --get user.name": "henlo",
 				"git config --get user.email": "this.is@dog",
+				"git rev-parse --abbrev-ref HEAD": "main",
 				"git rev-list --left-right --count HEAD...origin": "1\t0",
 				"git status --porcelain": "whatever",
 			});
@@ -99,12 +105,165 @@ describe("Git plugin", () => {
 			context.sys.mockExec({
 				"git config --get user.name": "henlo",
 				"git config --get user.email": "this.is@dog",
+				"git rev-parse --abbrev-ref HEAD": "main",
+				"git symbolic-ref --short refs/remotes/origin/HEAD": "origin/main",
 				"git rev-list --left-right --count HEAD...origin": "1\t0",
 				"git status --porcelain": "",
 			});
 
 			await gitPlugin.executeStage(context, DefaultStages.check);
 			expect(context.errors).toHaveLength(0);
+		});
+
+		it("succeeds when on the 'main' branch (default pattern)", async () => {
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({
+				plugins: [gitPlugin],
+			});
+			context.sys.mockExec({
+				"git config --get user.name": "henlo",
+				"git config --get user.email": "this.is@dog",
+				"git rev-parse --abbrev-ref HEAD": "main",
+				"git symbolic-ref --short refs/remotes/origin/HEAD": "origin/main",
+				"git rev-list --left-right --count HEAD...origin": "1\t0",
+				"git status --porcelain": "",
+			});
+
+			await gitPlugin.executeStage(context, DefaultStages.check);
+			expect(context.errors).toHaveLength(0);
+		});
+
+		it("succeeds when on the 'master' branch (default pattern)", async () => {
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({
+				plugins: [gitPlugin],
+			});
+			context.sys.mockExec({
+				"git config --get user.name": "henlo",
+				"git config --get user.email": "this.is@dog",
+				"git rev-parse --abbrev-ref HEAD": "master",
+				"git symbolic-ref --short refs/remotes/origin/HEAD": "origin/master",
+				"git rev-list --left-right --count HEAD...origin": "1\t0",
+				"git status --porcelain": "",
+			});
+
+			await gitPlugin.executeStage(context, DefaultStages.check);
+			expect(context.errors).toHaveLength(0);
+		});
+
+		it("raises a fatal error when not on an allowed branch", async () => {
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({
+				plugins: [gitPlugin],
+			});
+			context.sys.mockExec((cmd) => {
+				if (cmd === "git config --get user.name") return "henlo";
+				if (cmd === "git config --get user.email") return "this.is@dog";
+				if (cmd === "git rev-parse --abbrev-ref HEAD") return "feature-branch";
+				if (cmd === "git symbolic-ref --short refs/remotes/origin/HEAD") {
+					// Simulate failure - fall back to ["main", "master"]
+					throw new Error("not a symbolic ref");
+				}
+				throw new Error(`mock missing for command "${cmd}"!`);
+			});
+
+			await assertReleaseError(() => gitPlugin.executeStage(context, DefaultStages.check), {
+				fatal: true,
+				messageMatches: /Release can only be triggered from/i,
+			});
+		});
+
+		it("uses dynamic default branch from git symbolic-ref", async () => {
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({
+				plugins: [gitPlugin],
+			});
+			context.sys.mockExec({
+				"git config --get user.name": "henlo",
+				"git config --get user.email": "this.is@dog",
+				"git rev-parse --abbrev-ref HEAD": "develop",
+				"git symbolic-ref --short refs/remotes/origin/HEAD": "origin/develop",
+				"git rev-list --left-right --count HEAD...origin": "1\t0",
+				"git status --porcelain": "",
+			});
+
+			await gitPlugin.executeStage(context, DefaultStages.check);
+			expect(context.errors).toHaveLength(0);
+		});
+
+		it("falls back to main/master when git symbolic-ref fails", async () => {
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({
+				plugins: [gitPlugin],
+			});
+			context.sys.mockExec((cmd) => {
+				if (cmd === "git config --get user.name") return "henlo";
+				if (cmd === "git config --get user.email") return "this.is@dog";
+				if (cmd === "git rev-parse --abbrev-ref HEAD") return "main";
+				if (cmd === "git symbolic-ref --short refs/remotes/origin/HEAD") {
+					throw new Error("not a symbolic ref");
+				}
+				if (cmd === "git rev-list --left-right --count HEAD...origin") return "1\t0";
+				if (cmd === "git status --porcelain") return "";
+				throw new Error(`mock missing for command "${cmd}"!`);
+			});
+
+			await gitPlugin.executeStage(context, DefaultStages.check);
+			expect(context.errors).toHaveLength(0);
+		});
+
+		it("succeeds with custom branch pattern (single string)", async () => {
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({
+				plugins: [gitPlugin],
+				argv: { branchPattern: ["develop"] },
+			});
+			context.sys.mockExec({
+				"git config --get user.name": "henlo",
+				"git config --get user.email": "this.is@dog",
+				"git rev-parse --abbrev-ref HEAD": "develop",
+				"git rev-list --left-right --count HEAD...origin": "1\t0",
+				"git status --porcelain": "",
+			});
+
+			await gitPlugin.executeStage(context, DefaultStages.check);
+			expect(context.errors).toHaveLength(0);
+		});
+
+		it("succeeds with wildcard pattern matching release branches", async () => {
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({
+				plugins: [gitPlugin],
+				argv: { branchPattern: ["main", "release/*"] },
+			});
+			context.sys.mockExec({
+				"git config --get user.name": "henlo",
+				"git config --get user.email": "this.is@dog",
+				"git rev-parse --abbrev-ref HEAD": "release/1.0.0",
+				"git rev-list --left-right --count HEAD...origin": "1\t0",
+				"git status --porcelain": "",
+			});
+
+			await gitPlugin.executeStage(context, DefaultStages.check);
+			expect(context.errors).toHaveLength(0);
+		});
+
+		it("fails with wildcard pattern when branch doesn't match", async () => {
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({
+				plugins: [gitPlugin],
+				argv: { branchPattern: ["main", "release/*"] },
+			});
+			context.sys.mockExec({
+				"git config --get user.name": "henlo",
+				"git config --get user.email": "this.is@dog",
+				"git rev-parse --abbrev-ref HEAD": "feature/my-feature",
+			});
+
+			await assertReleaseError(() => gitPlugin.executeStage(context, DefaultStages.check), {
+				fatal: true,
+				messageMatches: /Release can only be triggered from/i,
+			});
 		});
 	});
 
@@ -131,7 +290,7 @@ describe("Git plugin", () => {
 
 			const commitmessagePath = path.join(testFSRoot, ".commitmessage");
 
-			await expect(fs.pathExists(commitmessagePath)).resolves.toBeTrue();
+			await expect(pathExists(commitmessagePath)).resolves.toBe(true);
 			const fileContent = await fs.readFile(commitmessagePath, "utf8");
 			expect(fileContent).toBe(`chore: release v1.2.3
 
@@ -276,6 +435,83 @@ This is the changelog.`);
 				expect(context.sys.execRaw).toHaveBeenCalledWith(cmd, expect.anything());
 			}
 		});
+
+		it("marks rollback.pushAttempted=true once a real push is dispatched", async () => {
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({ plugins: [gitPlugin] });
+			context.setData("version_new", "1.2.9");
+			context.rollback = {
+				originalHead: "deadbeef",
+				pushAttempted: false,
+			};
+			context.sys.mockExec(() => "");
+
+			await gitPlugin.executeStage(context, DefaultStages.push);
+
+			expect(context.rollback.pushAttempted).toBe(true);
+		});
+
+		it("leaves rollback.pushAttempted=false when pre-push setup fails", async () => {
+			// If a pre-push step (e.g. `getUpstream()`) throws before any push is
+			// dispatched, the release never contacted the remote — rollback must
+			// still be allowed.
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({
+				plugins: [gitPlugin],
+				// Force getUpstream() to be called by clearing the configured remote.
+				argv: { remote: "" },
+			});
+			context.setData("version_new", "1.2.9b");
+			context.rollback = {
+				originalHead: "deadbeef",
+				pushAttempted: false,
+			};
+			context.sys.mockExec((cmd) => {
+				if (cmd.includes("rev-parse --abbrev-ref --symbolic-full-name")) {
+					throw new Error("no upstream configured");
+				}
+				return "";
+			});
+
+			await expect(gitPlugin.executeStage(context, DefaultStages.push)).rejects.toThrow();
+
+			expect(context.rollback.pushAttempted).toBe(false);
+		});
+
+		it("does not mark rollback.pushAttempted in dry run", async () => {
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({
+				plugins: [gitPlugin],
+				argv: { dryRun: true },
+			});
+			context.setData("version_new", "1.3.0");
+			context.rollback = {
+				originalHead: "deadbeef",
+				pushAttempted: false,
+			};
+			context.sys.mockExec(() => "");
+
+			await gitPlugin.executeStage(context, DefaultStages.push);
+
+			expect(context.rollback.pushAttempted).toBe(false);
+		});
+
+		it("does not mark rollback.pushAttempted when --noPush is set", async () => {
+			const gitPlugin = new GitPlugin();
+			const context = createMockContext({
+				plugins: [gitPlugin],
+				argv: { noPush: true },
+			});
+			context.setData("version_new", "1.3.1");
+			context.rollback = {
+				originalHead: "deadbeef",
+				pushAttempted: false,
+			};
+
+			await gitPlugin.executeStage(context, DefaultStages.push);
+
+			expect(context.rollback.pushAttempted).toBe(false);
+		});
 	});
 
 	describe("cleanup stage", () => {
@@ -299,9 +535,9 @@ This is the changelog.`);
 
 			const commitmessagePath = path.join(testFSRoot, ".commitmessage");
 
-			await expect(fs.pathExists(commitmessagePath)).resolves.toBeTrue();
+			await expect(pathExists(commitmessagePath)).resolves.toBe(true);
 			await gitPlugin.executeStage(context, DefaultStages.cleanup);
-			await expect(fs.pathExists(commitmessagePath)).resolves.toBeFalse();
+			await expect(pathExists(commitmessagePath)).resolves.toBe(false);
 		});
 
 		// TODO: Figure out why this test is failing. The command shows up in logs, but toHaveBeenCalledTimes fails.
