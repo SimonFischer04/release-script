@@ -462,8 +462,9 @@ ${fixtures.changelog_subsectionsParse2}`,
 				plugins: [changelogPlugin],
 				cwd: testFSRoot,
 				argv: {
-					additionalChangelog: '* first Changelog entry added via cli-option\n* another CLI-Option Changelog entry',
-				}
+					additionalChangelog:
+						"* first Changelog entry added via cli-option\n* another CLI-Option Changelog entry",
+				},
 			});
 
 			await testFS.create({
@@ -504,8 +505,9 @@ ${fixtures.changelog_testParse3}`,
 				plugins: [changelogPlugin],
 				cwd: testFSRoot,
 				argv: {
-					additionalChangelog: '* first Changelog entry added via cli-option\n* another CLI-Option Changelog entry',
-				}
+					additionalChangelog:
+						"* first Changelog entry added via cli-option\n* another CLI-Option Changelog entry",
+				},
 			});
 
 			await testFS.create({

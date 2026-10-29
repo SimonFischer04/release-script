@@ -116,8 +116,8 @@ class ChangelogPlugin implements Plugin {
 			additionalChangelog: {
 				alias: ["additional-changelog"],
 				type: "string",
-				description: `Add additional changelog entry/entries to the release.`
-			}
+				description: `Add additional changelog entry/entries to the release.`,
+			},
 		});
 	}
 
@@ -207,11 +207,11 @@ class ChangelogPlugin implements Plugin {
 		// But we only output the primary one
 		const changelogPlaceholder = `${changelogPlaceholderPrefix} ${changelogMarkers[0]}`;
 
-		if(context.argv.additionalChangelog) {
+		if (context.argv.additionalChangelog) {
 			let currentChangelogsIndex = entries.findIndex((e) => getPlaceholderRegex().test(e));
 			if (currentChangelogsIndex == -1) {
 				entries.unshift(changelogPlaceholder);
-				currentChangelogsIndex = 0
+				currentChangelogsIndex = 0;
 			}
 			entries[currentChangelogsIndex] += `\n${context.argv.additionalChangelog}`;
 		}
