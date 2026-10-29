@@ -1,6 +1,6 @@
 {
   "name": "@simonfischer04/release-script-repo",
-  "version": "5.2.2",
+  "version": "5.3.0",
   "description": "Release script to automatically increment version numbers and push git tags",
   "keywords": [
     "release",

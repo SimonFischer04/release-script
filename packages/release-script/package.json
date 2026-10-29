@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "5.2.1",
+  "version": "5.3.0",
   "type": "module",
   "description": "Release script to automatically increment version numbers and push git tags of Node.js projects",
   "keywords": [],
@@ -34,12 +34,12 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@simonfischer04/release-script-core": "5.2.0",
-    "@simonfischer04/release-script-plugin-changelog": "5.2.1",
-    "@simonfischer04/release-script-plugin-exec": "5.2.0",
-    "@simonfischer04/release-script-plugin-git": "5.2.0",
-    "@simonfischer04/release-script-plugin-package": "5.2.0",
-    "@simonfischer04/release-script-plugin-version": "5.2.0",
+    "@simonfischer04/release-script-core": "5.3.0",
+    "@simonfischer04/release-script-plugin-changelog": "5.3.0",
+    "@simonfischer04/release-script-plugin-exec": "5.3.0",
+    "@simonfischer04/release-script-plugin-git": "5.3.0",
+    "@simonfischer04/release-script-plugin-package": "5.3.0",
+    "@simonfischer04/release-script-plugin-version": "5.3.0",
     "alcalzone-shared": "^5.0.0",
     "enquirer": "^2.3.6",
     "picocolors": "1.0.0",
@@ -48,7 +48,7 @@
     "yargs": "^17.4.1"
   },
   "devDependencies": {
-    "@simonfischer04/release-script-testing": "5.2.0",
+    "@simonfischer04/release-script-testing": "5.3.0",
     "@types/yargs": "^17.0.33",
     "typescript": "~5.9.3"
   },

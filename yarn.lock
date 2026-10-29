@@ -919,7 +919,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@simonfischer04/release-script-core@npm:5.2.0, @simonfischer04/release-script-core@workspace:packages/core":
+"@simonfischer04/release-script-core@npm:5.3.0, @simonfischer04/release-script-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-core@workspace:packages/core"
   dependencies:
@@ -931,36 +931,36 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simonfischer04/release-script-plugin-changelog@npm:5.2.1, @simonfischer04/release-script-plugin-changelog@workspace:packages/plugin-changelog":
+"@simonfischer04/release-script-plugin-changelog@npm:5.3.0, @simonfischer04/release-script-plugin-changelog@workspace:packages/plugin-changelog":
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-plugin-changelog@workspace:packages/plugin-changelog"
   dependencies:
-    "@simonfischer04/release-script-core": "npm:5.2.0"
-    "@simonfischer04/release-script-testing": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
+    "@simonfischer04/release-script-testing": "npm:5.3.0"
     alcalzone-shared: "npm:^5.0.0"
     jest-extended: "npm:^3.1.0"
     typescript: "npm:~5.9.3"
   languageName: unknown
   linkType: soft
 
-"@simonfischer04/release-script-plugin-exec@npm:5.2.0, @simonfischer04/release-script-plugin-exec@workspace:packages/plugin-exec":
+"@simonfischer04/release-script-plugin-exec@npm:5.3.0, @simonfischer04/release-script-plugin-exec@workspace:packages/plugin-exec":
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-plugin-exec@workspace:packages/plugin-exec"
   dependencies:
-    "@simonfischer04/release-script-core": "npm:5.2.0"
-    "@simonfischer04/release-script-testing": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
+    "@simonfischer04/release-script-testing": "npm:5.3.0"
     alcalzone-shared: "npm:^5.0.0"
     jest-extended: "npm:^3.1.0"
     typescript: "npm:~5.9.3"
   languageName: unknown
   linkType: soft
 
-"@simonfischer04/release-script-plugin-git@npm:5.2.0, @simonfischer04/release-script-plugin-git@workspace:packages/plugin-git":
+"@simonfischer04/release-script-plugin-git@npm:5.3.0, @simonfischer04/release-script-plugin-git@workspace:packages/plugin-git":
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-plugin-git@workspace:packages/plugin-git"
   dependencies:
-    "@simonfischer04/release-script-core": "npm:5.2.0"
-    "@simonfischer04/release-script-testing": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
+    "@simonfischer04/release-script-testing": "npm:5.3.0"
     jest-extended: "npm:^3.1.0"
     typescript: "npm:~5.9.3"
   languageName: unknown
@@ -970,8 +970,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-plugin-iobroker@workspace:packages/plugin-iobroker"
   dependencies:
-    "@simonfischer04/release-script-core": "npm:5.2.0"
-    "@simonfischer04/release-script-testing": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
+    "@simonfischer04/release-script-testing": "npm:5.3.0"
     alcalzone-shared: "npm:^5.0.0"
     jest-extended: "npm:^3.1.0"
     ky: "npm:^1.7.5"
@@ -984,8 +984,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-plugin-lerna@workspace:packages/plugin-lerna"
   dependencies:
-    "@simonfischer04/release-script-core": "npm:5.2.0"
-    "@simonfischer04/release-script-testing": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
+    "@simonfischer04/release-script-testing": "npm:5.3.0"
     jest-extended: "npm:^3.1.0"
     semver: "npm:^7.7.2"
     typescript: "npm:~5.9.3"
@@ -996,8 +996,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-plugin-license@workspace:packages/plugin-license"
   dependencies:
-    "@simonfischer04/release-script-core": "npm:5.2.0"
-    "@simonfischer04/release-script-testing": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
+    "@simonfischer04/release-script-testing": "npm:5.3.0"
     jest-extended: "npm:^3.1.0"
     tiny-glob: "npm:^0.2.9"
     typescript: "npm:~5.9.3"
@@ -1008,20 +1008,20 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-plugin-manual-review@workspace:packages/plugin-manual-review"
   dependencies:
-    "@simonfischer04/release-script-core": "npm:5.2.0"
-    "@simonfischer04/release-script-testing": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
+    "@simonfischer04/release-script-testing": "npm:5.3.0"
     jest-extended: "npm:^3.1.0"
     typescript: "npm:~5.9.3"
   languageName: unknown
   linkType: soft
 
-"@simonfischer04/release-script-plugin-package@npm:5.2.0, @simonfischer04/release-script-plugin-package@workspace:packages/plugin-package":
+"@simonfischer04/release-script-plugin-package@npm:5.3.0, @simonfischer04/release-script-plugin-package@workspace:packages/plugin-package":
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-plugin-package@workspace:packages/plugin-package"
   dependencies:
     "@alcalzone/pak": "npm:^0.12.0"
-    "@simonfischer04/release-script-core": "npm:5.2.0"
-    "@simonfischer04/release-script-testing": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
+    "@simonfischer04/release-script-testing": "npm:5.3.0"
     alcalzone-shared: "npm:^5.0.0"
     jest-extended: "npm:^3.1.0"
     semver: "npm:^7.7.2"
@@ -1033,19 +1033,19 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-plugin-template@workspace:packages/plugin-template"
   dependencies:
-    "@simonfischer04/release-script-core": "npm:5.2.0"
-    "@simonfischer04/release-script-testing": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
+    "@simonfischer04/release-script-testing": "npm:5.3.0"
     jest-extended: "npm:^3.1.0"
     typescript: "npm:~5.9.3"
   languageName: unknown
   linkType: soft
 
-"@simonfischer04/release-script-plugin-version@npm:5.2.0, @simonfischer04/release-script-plugin-version@workspace:packages/plugin-version":
+"@simonfischer04/release-script-plugin-version@npm:5.3.0, @simonfischer04/release-script-plugin-version@workspace:packages/plugin-version":
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-plugin-version@workspace:packages/plugin-version"
   dependencies:
-    "@simonfischer04/release-script-core": "npm:5.2.0"
-    "@simonfischer04/release-script-testing": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
+    "@simonfischer04/release-script-testing": "npm:5.3.0"
     alcalzone-shared: "npm:^5.0.0"
     jest-extended: "npm:^3.1.0"
     semver: "npm:^7.7.2"
@@ -1079,11 +1079,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@simonfischer04/release-script-testing@npm:5.2.0, @simonfischer04/release-script-testing@workspace:packages/testing":
+"@simonfischer04/release-script-testing@npm:5.3.0, @simonfischer04/release-script-testing@workspace:packages/testing":
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script-testing@workspace:packages/testing"
   dependencies:
-    "@simonfischer04/release-script-core": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
     execa: "npm:^5.1.1"
     picocolors: "npm:1.0.0"
     typescript: "npm:~5.9.3"
@@ -1096,13 +1096,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@simonfischer04/release-script@workspace:packages/release-script"
   dependencies:
-    "@simonfischer04/release-script-core": "npm:5.2.0"
-    "@simonfischer04/release-script-plugin-changelog": "npm:5.2.1"
-    "@simonfischer04/release-script-plugin-exec": "npm:5.2.0"
-    "@simonfischer04/release-script-plugin-git": "npm:5.2.0"
-    "@simonfischer04/release-script-plugin-package": "npm:5.2.0"
-    "@simonfischer04/release-script-plugin-version": "npm:5.2.0"
-    "@simonfischer04/release-script-testing": "npm:5.2.0"
+    "@simonfischer04/release-script-core": "npm:5.3.0"
+    "@simonfischer04/release-script-plugin-changelog": "npm:5.3.0"
+    "@simonfischer04/release-script-plugin-exec": "npm:5.3.0"
+    "@simonfischer04/release-script-plugin-git": "npm:5.3.0"
+    "@simonfischer04/release-script-plugin-package": "npm:5.3.0"
+    "@simonfischer04/release-script-plugin-version": "npm:5.3.0"
+    "@simonfischer04/release-script-testing": "npm:5.3.0"
     "@types/yargs": "npm:^17.0.33"
     alcalzone-shared: "npm:^5.0.0"
     enquirer: "npm:^2.3.6"
