@@ -1,4 +1,4 @@
-import { createMockContext } from "@alcalzone/release-script-testing";
+import { createMockContext } from "@simonfischer04/release-script-testing";
 import { describe, expect, it } from "vitest";
 import { captureRollbackSnapshot, finalizeRollback } from "./rollback.js";
 

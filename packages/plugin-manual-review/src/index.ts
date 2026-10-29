@@ -1,5 +1,5 @@
-import { DefaultStages } from "@alcalzone/release-script-core";
-import type { Context, Plugin, Stage } from "@alcalzone/release-script-core/types";
+import { DefaultStages } from "@simonfischer04/release-script-core";
+import type { Context, Plugin, Stage } from "@simonfischer04/release-script-core/types";
 
 class ManualReviewPlugin implements Plugin {
 	public readonly id = "manual-review";

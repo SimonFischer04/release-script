@@ -1,5 +1,5 @@
 {
-  "name": "@alcalzone/release-script-core",
+  "name": "@simonfischer04/release-script-core",
   "publishConfig": {
     "access": "public"
   },
@@ -12,6 +12,12 @@
     "name": "AlCalzone",
     "email": "d.griesel@gmx.net"
   },
+  "contributors": [
+    {
+      "name": "Simon Fischer",
+      "url": "https://github.com/SimonFischer04"
+    }
+  ],
   "exports": {
     ".": "./build/index.js",
     "./package.json": "./package.json",
@@ -39,13 +45,13 @@
     "build": "tsc -b tsconfig.build.json",
     "watch": "tsc -b tsconfig.build.json --watch"
   },
-  "homepage": "https://github.com/AlCalzone/release-script/tree/main/packages/core#readme",
+  "homepage": "https://github.com/SimonFischer04/release-script/tree/dev/packages/core#readme",
   "repository": {
     "type": "git",
-    "url": "git@github.com:AlCalzone/release-script.git"
+    "url": "https://github.com/SimonFischer04/release-script.git"
   },
   "bugs": {
-    "url": "https://github.com/AlCalzone/release-script/issues"
+    "url": "https://github.com/SimonFischer04/release-script/issues"
   },
   "readmeFilename": "README.md"
 }

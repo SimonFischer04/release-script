@@ -375,7 +375,7 @@ describe("regression tests", () => {
 		const allPlugins: Plugin[] = await Promise.all(
 			chosenPlugins.map(
 				async (plugin) =>
-					new (await import(`@alcalzone/release-script-plugin-${plugin}`)).default(),
+					new (await import(`@simonfischer04/release-script-plugin-${plugin}`)).default(),
 			),
 		);
 		const plugins = resolvePlugins(allPlugins, chosenPlugins);
@@ -414,7 +414,7 @@ describe("regression tests", () => {
 		const allPlugins: Plugin[] = await Promise.all(
 			chosenPlugins.map(
 				async (plugin) =>
-					new (await import(`@alcalzone/release-script-plugin-${plugin}`)).default(),
+					new (await import(`@simonfischer04/release-script-plugin-${plugin}`)).default(),
 			),
 		);
 		const plugins = resolvePlugins(allPlugins, chosenPlugins);
@@ -453,7 +453,7 @@ describe("regression tests", () => {
 		const allPlugins: Plugin[] = await Promise.all(
 			chosenPlugins.map(
 				async (plugin) =>
-					new (await import(`@alcalzone/release-script-plugin-${plugin}`)).default(),
+					new (await import(`@simonfischer04/release-script-plugin-${plugin}`)).default(),
 			),
 		);
 		const plugins = resolvePlugins(allPlugins, chosenPlugins);

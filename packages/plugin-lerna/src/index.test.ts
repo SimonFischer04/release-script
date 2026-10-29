@@ -1,5 +1,9 @@
-import { DefaultStages } from "@alcalzone/release-script-core";
-import { assertReleaseError, createMockContext, TestFS } from "@alcalzone/release-script-testing";
+import { DefaultStages } from "@simonfischer04/release-script-core";
+import {
+	assertReleaseError,
+	createMockContext,
+	TestFS,
+} from "@simonfischer04/release-script-testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import LernaPlugin from "./index.js";
 

@@ -1,5 +1,5 @@
-import { DefaultStages, pathExists, readJson } from "@alcalzone/release-script-core";
-import type { Context, Plugin, Stage } from "@alcalzone/release-script-core/types";
+import { DefaultStages, pathExists, readJson } from "@simonfischer04/release-script-core";
+import type { Context, Plugin, Stage } from "@simonfischer04/release-script-core/types";
 import path from "path";
 import semver from "semver";
 
