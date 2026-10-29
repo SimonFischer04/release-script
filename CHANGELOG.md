@@ -3,6 +3,12 @@
     Placeholder for the next version (at the beginning of the line):
     ## **WORK IN PROGRESS**
 -->
+## **WORK IN PROGRESS**
+* Published as a fork under the `@simonfischer04` npm scope: replace `@alcalzone/release-script*` dependencies with `@simonfischer04/release-script*`
+* `changelog` plugin: Add `--additionalChangelog` option to add changelog entries from the command line
+* `changelog` plugin: Keep a blank line before the first changelog entry (#216)
+* `package` plugin: Only apply the `stableVersion` workaround on yarn < 4.18.0 (#210)
+
 ## 5.2.2 (2026-07-31)
 * `license` plugin: Do not complain about outdated copyright year in GPL and similar licenses (#209)
 
