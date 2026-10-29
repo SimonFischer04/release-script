@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "5.3.0",
+  "version": "5.3.1",
   "type": "module",
   "description": "Plugin for Al Calzone's release script: license",
   "keywords": [],
@@ -32,11 +32,11 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@simonfischer04/release-script-core": "5.3.0",
+    "@simonfischer04/release-script-core": "5.3.1",
     "tiny-glob": "^0.2.9"
   },
   "devDependencies": {
-    "@simonfischer04/release-script-testing": "5.3.0",
+    "@simonfischer04/release-script-testing": "5.3.1",
     "jest-extended": "^3.1.0",
     "typescript": "~5.9.3"
   },

@@ -4,6 +4,9 @@
     ## **WORK IN PROGRESS**
 -->
 
+## 5.3.1 (2026-10-29)
+* Test release to verify publishing via npm trusted publishing
+
 ## 5.3.0 (2026-10-29)
 * Published as a fork under the `@simonfischer04` npm scope: replace `@alcalzone/release-script*` dependencies with `@simonfischer04/release-script*`
 * `changelog` plugin: Add `--additionalChangelog` option to add changelog entries from the command line

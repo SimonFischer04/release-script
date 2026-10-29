@@ -1,7 +1,7 @@
 {
   "name": "@simonfischer04/release-script-testing",
   "private": true,
-  "version": "5.3.0",
+  "version": "5.3.1",
   "type": "module",
   "description": "Al Calzone's release script: testing tools",
   "keywords": [],
@@ -30,7 +30,7 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@simonfischer04/release-script-core": "5.3.0",
+    "@simonfischer04/release-script-core": "5.3.1",
     "execa": "^5.1.1",
     "picocolors": "1.0.0",
     "typescript": "~5.9.3"

@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "5.3.0",
+  "version": "5.3.1",
   "type": "module",
   "description": "Plugin for Al Calzone's release script: ioBroker",
   "keywords": [],
@@ -32,13 +32,13 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@simonfischer04/release-script-core": "5.3.0",
+    "@simonfischer04/release-script-core": "5.3.1",
     "alcalzone-shared": "^5.0.0",
     "ky": "^1.7.5",
     "semver": "^7.7.2"
   },
   "devDependencies": {
-    "@simonfischer04/release-script-testing": "5.3.0",
+    "@simonfischer04/release-script-testing": "5.3.1",
     "jest-extended": "^3.1.0",
     "typescript": "~5.9.3"
   },
