@@ -11,7 +11,7 @@ import {
 	resolvePlugins,
 	type SelectOption,
 	stripColors,
-} from "@alcalzone/release-script-core";
+} from "@simonfischer04/release-script-core";
 import { distinct } from "alcalzone-shared/arrays";
 import enquirer from "enquirer";
 import colors from "picocolors";
@@ -146,7 +146,7 @@ export async function main(): Promise<void> {
 	const yargsInstance = yargs(hideBin(process.argv));
 	let argv = yargsInstance
 		.env("RELEASE_SCRIPT")
-		.usage("$0 [<bump> [<preid>]] [options]", "AlCalzone's release script", (yargs) =>
+		.usage("$0 [<bump> [<preid>]] [options]", "Release script", (yargs) =>
 			yargs
 				.positional("bump", {
 					describe: "The version bump to do.",
@@ -226,7 +226,7 @@ export async function main(): Promise<void> {
 	const allPlugins: Plugin[] = await Promise.all(
 		chosenPlugins.map(
 			async (plugin) =>
-				new (await import(`@alcalzone/release-script-plugin-${plugin}`)).default(),
+				new (await import(`@simonfischer04/release-script-plugin-${plugin}`)).default(),
 		),
 	);
 	const plugins = resolvePlugins(allPlugins, chosenPlugins);

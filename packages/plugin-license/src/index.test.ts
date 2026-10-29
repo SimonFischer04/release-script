@@ -1,5 +1,5 @@
-import { DefaultStages } from "@alcalzone/release-script-core";
-import { createMockContext, TestFS } from "@alcalzone/release-script-testing";
+import { DefaultStages } from "@simonfischer04/release-script-core";
+import { createMockContext, TestFS } from "@simonfischer04/release-script-testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import LicensePlugin from "./index.js";
 

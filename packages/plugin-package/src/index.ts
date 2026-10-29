@@ -1,6 +1,11 @@
 import { detectPackageManager } from "@alcalzone/pak";
-import { DefaultStages, pathExists, readJson, writeJson } from "@alcalzone/release-script-core";
-import type { Context, Plugin, Stage } from "@alcalzone/release-script-core/types";
+import {
+	DefaultStages,
+	pathExists,
+	readJson,
+	writeJson,
+} from "@simonfischer04/release-script-core";
+import type { Context, Plugin, Stage } from "@simonfischer04/release-script-core/types";
 import { isArray, isObject } from "alcalzone-shared/typeguards";
 import fs from "node:fs/promises";
 import path from "path";

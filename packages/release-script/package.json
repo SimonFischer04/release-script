@@ -1,5 +1,5 @@
 {
-  "name": "@alcalzone/release-script",
+  "name": "@simonfischer04/release-script",
   "publishConfig": {
     "access": "public"
   },
@@ -12,6 +12,12 @@
     "name": "AlCalzone",
     "email": "d.griesel@gmx.net"
   },
+  "contributors": [
+    {
+      "name": "Simon Fischer",
+      "url": "https://github.com/SimonFischer04"
+    }
+  ],
   "bin": "bin/release.js",
   "exports": {
     ".": "./build/index.js",
@@ -28,12 +34,12 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@alcalzone/release-script-core": "5.2.0",
-    "@alcalzone/release-script-plugin-changelog": "5.2.1",
-    "@alcalzone/release-script-plugin-exec": "5.2.0",
-    "@alcalzone/release-script-plugin-git": "5.2.0",
-    "@alcalzone/release-script-plugin-package": "5.2.0",
-    "@alcalzone/release-script-plugin-version": "5.2.0",
+    "@simonfischer04/release-script-core": "5.2.0",
+    "@simonfischer04/release-script-plugin-changelog": "5.2.1",
+    "@simonfischer04/release-script-plugin-exec": "5.2.0",
+    "@simonfischer04/release-script-plugin-git": "5.2.0",
+    "@simonfischer04/release-script-plugin-package": "5.2.0",
+    "@simonfischer04/release-script-plugin-version": "5.2.0",
     "alcalzone-shared": "^5.0.0",
     "enquirer": "^2.3.6",
     "picocolors": "1.0.0",
@@ -42,7 +48,7 @@
     "yargs": "^17.4.1"
   },
   "devDependencies": {
-    "@alcalzone/release-script-testing": "5.2.0",
+    "@simonfischer04/release-script-testing": "5.2.0",
     "@types/yargs": "^17.0.33",
     "typescript": "~5.9.3"
   },
@@ -51,13 +57,13 @@
     "build": "tsc -b tsconfig.build.json",
     "watch": "tsc -b tsconfig.build.json --watch"
   },
-  "homepage": "https://github.com/AlCalzone/release-script",
+  "homepage": "https://github.com/SimonFischer04/release-script",
   "repository": {
     "type": "git",
-    "url": "git@github.com:AlCalzone/release-script.git"
+    "url": "https://github.com/SimonFischer04/release-script.git"
   },
   "bugs": {
-    "url": "https://github.com/AlCalzone/release-script/issues"
+    "url": "https://github.com/SimonFischer04/release-script/issues"
   },
   "readmeFilename": "README.md"
 }

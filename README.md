@@ -1,4 +1,8 @@
-# AlCalzone's Release Script
+# Release Script
+
+> This is a fork of [AlCalzone/release-script](https://github.com/AlCalzone/release-script), published under the `@simonfischer04` npm scope.
+> It tracks upstream and may carry additional features and fixes.
+> To switch from upstream, replace every `@alcalzone/release-script*` dependency with the matching `@simonfischer04/release-script*` package.
 
 Automate the monotonous tasks when it comes to releasing new versions of your project. The features include:
 
@@ -22,7 +26,7 @@ Together with the corresponding **Github Actions** workflow (more on that below)
 1. Add this module to your `devDependencies`:
 
     ```bash
-    npm i -D @alcalzone/release-script
+    npm i -D @simonfischer04/release-script
     ```
 
 2. Add a new `npm` script in `package.json`:
@@ -273,9 +277,9 @@ To do so, add them as a `devDependency`:
 // package.json
 // ...
   "devDependencies": {
-    "@alcalzone/release-script": "3.0.0",
-    "@alcalzone/release-script-plugin-iobroker": "3.0.0",
-    "@alcalzone/release-script-plugin-license": "3.0.0",
+    "@simonfischer04/release-script": "3.0.0",
+    "@simonfischer04/release-script-plugin-iobroker": "3.0.0",
+    "@simonfischer04/release-script-plugin-license": "3.0.0",
     // ... others ...
   }
 ```
@@ -295,7 +299,7 @@ or to `.releaseconfig.json` if you're using that:
 }
 ```
 
-If possible, the version for the plugins should be the same as the one for `@alcalzone/release-script`.
+If possible, the version for the plugins should be the same as the one for `@simonfischer04/release-script`.
 
 ### Stages
 

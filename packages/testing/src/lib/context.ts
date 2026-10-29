@@ -5,7 +5,7 @@ import {
 	ReleaseError,
 	stripColors,
 	type System,
-} from "@alcalzone/release-script-core";
+} from "@simonfischer04/release-script-core";
 import type { ExecaReturnValue } from "execa";
 import colors from "picocolors";
 import type { Mock } from "vitest";

@@ -1,5 +1,5 @@
-import { DefaultStages, pathExists } from "@alcalzone/release-script-core";
-import type { Context, Plugin, Stage } from "@alcalzone/release-script-core/types";
+import { DefaultStages, pathExists } from "@simonfischer04/release-script-core";
+import type { Context, Plugin, Stage } from "@simonfischer04/release-script-core/types";
 import fs from "node:fs/promises";
 import path from "path";
 import type { Argv } from "yargs";

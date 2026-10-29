@@ -1,5 +1,5 @@
 {
-  "name": "@alcalzone/release-script-repo",
+  "name": "@simonfischer04/release-script-repo",
   "version": "5.2.2",
   "description": "Release script to automatically increment version numbers and push git tags",
   "keywords": [
@@ -12,6 +12,12 @@
     "name": "AlCalzone",
     "email": "d.griesel@gmx.net"
   },
+  "contributors": [
+    {
+      "name": "Simon Fischer",
+      "url": "https://github.com/SimonFischer04"
+    }
+  ],
   "private": true,
   "type": "module",
   "workspaces": [
@@ -54,13 +60,13 @@
     "commit": "git-cz",
     "postinstall": "husky install"
   },
-  "homepage": "https://github.com/AlCalzone/release-script",
+  "homepage": "https://github.com/SimonFischer04/release-script",
   "repository": {
     "type": "git",
-    "url": "git@github.com:AlCalzone/release-script.git"
+    "url": "https://github.com/SimonFischer04/release-script.git"
   },
   "bugs": {
-    "url": "https://github.com/AlCalzone/release-script/issues"
+    "url": "https://github.com/SimonFischer04/release-script/issues"
   },
   "readmeFilename": "README.md",
   "config": {

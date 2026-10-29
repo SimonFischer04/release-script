@@ -1,5 +1,9 @@
-import { DefaultStages, pathExists } from "@alcalzone/release-script-core";
-import { assertReleaseError, createMockContext, TestFS } from "@alcalzone/release-script-testing";
+import { DefaultStages, pathExists } from "@simonfischer04/release-script-core";
+import {
+	assertReleaseError,
+	createMockContext,
+	TestFS,
+} from "@simonfischer04/release-script-testing";
 import fs from "node:fs/promises";
 import path from "path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";

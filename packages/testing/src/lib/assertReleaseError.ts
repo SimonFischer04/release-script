@@ -1,4 +1,4 @@
-import { ReleaseError } from "@alcalzone/release-script-core";
+import { ReleaseError } from "@simonfischer04/release-script-core";
 import { AssertionError } from "assert";
 import { expect } from "vitest";
 
